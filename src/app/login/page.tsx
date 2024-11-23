@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Lock, User } from 'lucide-react'
 import { SplashScreen } from '@/components/splash-screen'
 
-export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+export default function LoginPage() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -16,12 +16,11 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (username === 'admin' && password === 'password') {
-            onLogin()
+            console.log("Hello")
         } else {
             setError('Invalid username or password')
         }
     }
-
 
     const [showSplash, setShowSplash] = useState(true)
 
