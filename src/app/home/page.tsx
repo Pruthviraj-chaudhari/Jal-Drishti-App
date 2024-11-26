@@ -116,7 +116,7 @@ function JalDristi() {
     try {
       const token = localStorage.getItem('token');
       setIsUploading(true);
-      const response = await fetch('http://localhost:8000/api/incidents', {
+      const response = await fetch('https://jal-drishti-backend.vercel.app/api/incidents', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
