@@ -8,7 +8,7 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
     const timer = setTimeout(() => {
       setOpacity(0)
       setTimeout(onFinish, 500) // Wait for fade out animation to complete
-    }, 2000)
+    }, 1000)
 
     return () => clearTimeout(timer)
   }, [onFinish])
