@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -15,7 +14,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import dynamic from 'next/dynamic';
 
+const MapComponent = dynamic(() => import('@/components/mapcomponent'), { ssr: false });
 
 type Department = {
   _id: string;
@@ -26,12 +28,13 @@ function JalDristi() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [location, setLocation] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Added loading state for form submission
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [department, setDepartment] = useState<string>('');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [category, setCategory] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [isLoadingDepartments, setIsLoadingDepartments] = useState<boolean>(true);
+  const [isMapModalOpen, setIsMapModalOpen] = useState<boolean>(false);
   const { token } = useAuth();
   const router = useRouter();
 
@@ -40,7 +43,7 @@ function JalDristi() {
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BACKEND}/departments`, {
           headers: {
-            Authorization: `Bearer ${token}`, // Send token in the Authorization header
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -76,11 +79,28 @@ function JalDristi() {
         },
         (error) => {
           console.error('Error getting location:', error);
+          toast({
+            title: "Location access failed",
+            description: "Please choose a location on the map.",
+            variant: "destructive"
+          });
+          setIsMapModalOpen(true);
         }
       );
     } else {
       console.error('Geolocation is not supported by this browser.');
+      toast({
+        title: "Geolocation not supported",
+        description: "Please choose a location on the map.",
+        variant: "destructive"
+      });
+      setIsMapModalOpen(true);
     }
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    setLocation(`${lat}, ${lng}`);
+    setIsMapModalOpen(false);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -104,7 +124,7 @@ function JalDristi() {
     formData.append("longitude", longitude);
 
     try {
-      setIsSubmitting(true); // Added loading state
+      setIsSubmitting(true);
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BACKEND}/user/incidents`,
         formData,
@@ -133,7 +153,7 @@ function JalDristi() {
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false); // Added loading state
+      setIsSubmitting(false);
     }
   };
 
@@ -187,6 +207,22 @@ function JalDristi() {
               >
                 <MapPin className="h-4 w-4" />
               </Button>
+              <Dialog open={isMapModalOpen} onOpenChange={setIsMapModalOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" className="bg-blue-500 hover:bg-blue-600 transition-colors duration-200">
+                    Choose on Map
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Choose Location on Map</DialogTitle>
+                  </DialogHeader>
+                  <div className="h-[300px] w-full">
+                    <MapComponent
+                     onLocationSelect={handleMapClick} />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Department and Category */}
@@ -226,7 +262,6 @@ function JalDristi() {
                 </Select>
               </div>
             </div>
-
 
             {/* Description */}
             <div className="space-y-2">
